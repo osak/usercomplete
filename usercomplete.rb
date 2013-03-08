@@ -2,12 +2,14 @@
 
 Plugin.create(:usercomplete) do
   class CompletionInfo
+    attr_reader :insert_pos
+
     #
     # Constuructor.
     #
     def initialize(insert_pos, prefix)
       @insert_pos = insert_pos
-      @list = Plugin.filtering(:usercomplete, prefix, [])[1].sort.freeze
+      @list = Plugin.filtering(:user_prefix_search, prefix, [])[1].sort.freeze
       @cnt = 0
 
       # State information to determine whether iterating on candidates.
@@ -65,7 +67,7 @@ Plugin.create(:usercomplete) do
         # If completion command is invoked multiple times,
         # iterate over candidates.
         if @info.nil? || !@info.same_state?(start.offset, m[1])
-          @info = StateInfo.new(start.offset - m[1].length, m[1])
+          @info = CompletionInfo.new(start.offset - m[1].length, m[1])
         end
         name = @info.get_candidate
         insert_pos = buffer.get_iter_at_offset(@info.insert_pos)
