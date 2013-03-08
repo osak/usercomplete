@@ -13,9 +13,10 @@ How to
  $ git clone https://github.com/osak/usercomplete.git ~/.mikutter/plugin/
 
 もしくはみっくストアで．
+userutilに依存しているので，一緒に https://github.com/osak/userutil も導入してください．
 
-導入すると，postboxロールに「ユーザー名補完」というコマンドが追加されます．
-これをTabとかに割り当てておくと，IDの入力中にTabを押した時にユーザー名が補完されます．
+導入すると，postboxロールに「ユーザー名補完(次)」「ユーザー名補完(前)」というコマンドが追加されます．
+これをTabとかShift+Tabとかに割り当てておくと，IDの入力中にショートカットキーを押した時にユーザー名が補完されます．
 複数の候補があるときは，カーソル位置をそのままで繰り返し押すと1つずつ変わります．
 
 例::
