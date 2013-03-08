@@ -9,7 +9,7 @@ Plugin.create(:usercomplete) do
     #
     def initialize(insert_pos, prefix)
       @insert_pos = insert_pos
-      @list = Plugin.filtering(:user_prefix_search, prefix, [])[1].sort.freeze
+      @list = Plugin.filtering(:user_prefix_search, prefix, [])[1].map{|u| u[:idname]}.sort.freeze
       @cnt = 0
 
       # State information to determine whether iterating on candidates.
