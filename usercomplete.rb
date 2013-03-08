@@ -35,7 +35,11 @@ Plugin.create(:usercomplete) do
     # Returns currently looking candidate.
     #
     def get_candidate
-      @list[@cnt].dup
+      if @list.size == 0
+        nil
+      else
+        @list[@cnt].dup
+      end
     end
 
     #
@@ -75,10 +79,12 @@ Plugin.create(:usercomplete) do
         @info.step(step)
       end
       name = @info.get_candidate
-      insert_pos = buffer.get_iter_at_offset(@info.insert_pos)
-      buffer.delete(insert_pos, last)
-      buffer.insert(insert_pos, name)
-      @info.update(buffer.selection_bounds[1].offset, name)
+      if name
+        insert_pos = buffer.get_iter_at_offset(@info.insert_pos)
+        buffer.delete(insert_pos, last)
+        buffer.insert(insert_pos, name)
+        @info.update(buffer.selection_bounds[1].offset, name)
+      end
     end
   rescue => e
     Plugin.call(:update, nil, [Message.new(message: e.to_s + e.backtrace.join("\n"), system: true)])
