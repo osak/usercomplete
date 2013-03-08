@@ -39,44 +39,62 @@ Plugin.create(:usercomplete) do
     end
 
     #
+    # Increment (or decrement) counter.
+    #
+    # _val :: step size.
+    #
+    def step(val = 1)
+      @cnt += val
+      @cnt %= @list.size
+    end
+
+    #
     # Update state.
     #
     # _last_pos_ :: cursor position after last completion.
     # _last_comp_ :: last completed name.
     def update(last_pos, last_comp)
-      @cnt += 1
-      @cnt %= @list.size
       @last_pos = last_pos
       @last_completion = last_comp.dup.freeze
     end
   end
 
-  command(:usercomplete,
-          name: "ユーザー名補完",
+  def complete_main(widget, step)
+    raw_postbox = Plugin.filtering(:gui_get_gtk_widget, widget).first
+    buffer = raw_postbox.widget_post.buffer
+    start, last, selected = buffer.selection_bounds
+    text = buffer.get_text(nil, start)
+    m = text.match(/@([_a-zA-Z0-9]+)$/)
+    if m
+      # Check current state.
+      # If completion command is invoked multiple times,
+      # iterate over candidates.
+      if @info.nil? || !@info.same_state?(start.offset, m[1])
+        @info = CompletionInfo.new(start.offset - m[1].length, m[1])
+      else
+        @info.step(step)
+      end
+      name = @info.get_candidate
+      insert_pos = buffer.get_iter_at_offset(@info.insert_pos)
+      buffer.delete(insert_pos, last)
+      buffer.insert(insert_pos, name)
+      @info.update(buffer.selection_bounds[1].offset, name)
+    end
+  rescue => e
+    Plugin.call(:update, nil, [Message.new(message: e.to_s + e.backtrace.join("\n"), system: true)])
+  end
+
+  command(:usercomplete_forward,
+          name: "ユーザー名補完(次)",
           condition: Plugin::Command[:Editable],
           visible: false,
           role: :postbox) do |opt|
-    begin
-      raw_postbox = Plugin.filtering(:gui_get_gtk_widget, opt.widget).first
-      buffer = raw_postbox.widget_post.buffer
-      start, last, selected = buffer.selection_bounds
-      text = buffer.get_text(nil, start)
-      m = text.match(/@([_a-zA-Z0-9]+)$/)
-      if m
-        # Check current state.
-        # If completion command is invoked multiple times,
-        # iterate over candidates.
-        if @info.nil? || !@info.same_state?(start.offset, m[1])
-          @info = CompletionInfo.new(start.offset - m[1].length, m[1])
-        end
-        name = @info.get_candidate
-        insert_pos = buffer.get_iter_at_offset(@info.insert_pos)
-        buffer.delete(insert_pos, last)
-        buffer.insert(insert_pos, name)
-        @info.update(buffer.selection_bounds[1].offset, name)
-      end
-    rescue => e
-      Plugin.call(:update, nil, [Message.new(message: e.to_s + e.backtrace.join("\n"), system: true)])
-    end
-  end
+    complete_main(opt.widget, 1) end
+
+  command(:usercomplete_backward,
+          name: "ユーザー名補完(前)",
+          condition: Plugin::Command[:Editable],
+          visible: false,
+          role: :postbox) do |opt|
+    complete_main(opt.widget, -1) end
 end
