@@ -68,7 +68,7 @@ Plugin.create(:usercomplete) do
     buffer = raw_postbox.widget_post.buffer
     start, last, selected = buffer.selection_bounds
     text = buffer.get_text(nil, start)
-    m = text.match(/@([_a-zA-Z0-9]+)$/)
+    m = text.match(/@([_a-zA-Z0-9]+(?:@[-a-zA-Z0-9\.]+)?)$/)
     if m
       # Check current state.
       # If completion command is invoked multiple times,
