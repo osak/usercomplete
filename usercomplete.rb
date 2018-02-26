@@ -87,7 +87,7 @@ Plugin.create(:usercomplete) do
       end
     end
   rescue => e
-    Plugin.call(:update, nil, [Message.new(message: e.to_s + e.backtrace.join("\n"), system: true)])
+    Plugin.call(:update, nil, [Mikutter::System::Message.new(description: e.to_s + e.backtrace.join("\n"))])
   end
 
   command(:usercomplete_forward,
